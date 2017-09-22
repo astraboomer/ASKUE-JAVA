@@ -30,6 +30,10 @@ public class MeasuringChannel extends CheckBox {
     private MenuItem unCommMenuItem = new MenuItem("Пометить как некоммер.");
     private MenuItem showDataItem = new MenuItem("Показать данные");
 
+    public ContextMenu getMenu() {
+        return contextMenu;
+    }
+
     public MenuItem getShowDataItem() {
         return showDataItem;
     }
@@ -58,7 +62,7 @@ public class MeasuringChannel extends CheckBox {
         this.setSelected(true);
         // каждому measuringChannel-у добавляем контекстное меню
         contextMenu.getItems().addAll(showDataItem, unCommMenuItem);
-        this.setOnContextMenuRequested(event -> contextMenu.show(this, event.getScreenX(), event.getScreenY()));
+        //this.setOnContextMenuRequested(event -> contextMenu.show(this, event.getScreenX(), event.getScreenY()));
     }
     public boolean isCommercialInfo() {
         return isCommercialInfo;

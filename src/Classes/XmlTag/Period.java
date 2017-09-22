@@ -8,6 +8,15 @@ public class Period {
     private String status;
     private String extendedStatus;
     private String param1;
+    private MeasuringChannel parent;
+
+    public MeasuringChannel getParent() {
+        return parent;
+    }
+
+    public void setParent(MeasuringChannel parent) {
+        this.parent = parent;
+    }
 
     public String getInterval() {
         return interval;

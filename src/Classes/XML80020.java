@@ -146,6 +146,7 @@ public class XML80020 extends XmlClass {
                 for (int j = 0; j < measChannelChildNodeCount; j++) { // перебираем все дочер. узлы measuringchannel-а
                     if (measChannelChildNodeList.item(j).getNodeName().equals("period")) {
                         Period period = new Period();
+                        period.setParent(measuringChannel);
                         period.setStart(measChannelChildNodeList.item(j).getAttributes().getNamedItem("start").getNodeValue());
                         period.setEnd(measChannelChildNodeList.item(j).getAttributes().getNamedItem("end").getNodeValue());
                         period.setInterval();
@@ -155,9 +156,9 @@ public class XML80020 extends XmlClass {
                         Node statusAttr = value.getAttributes().getNamedItem("status");
                         if (statusAttr != null) { // атрибут status действительно имеется
                             period.setStatus(statusAttr.getNodeValue());
-                            if (period.getStatus().equals("1")) {
-                                measuringChannel.setCommercialInfo(false);
-                            }
+                        }
+                        else { // атрибута статус нет, ставим 0 (коммерч. инф-я)
+                            period.setStatus("0");
                         }
                         Node extStatusAttr = value.getAttributes().getNamedItem("extendedstatus");
                         if (extStatusAttr != null) { // атрибут extendedstatus действительно имеется
@@ -170,6 +171,12 @@ public class XML80020 extends XmlClass {
                         measuringChannel.addPeriod(period);
                     }
                 }
+                // узнаем число периодов с некомм. инф. в канале measuringChannel
+                int unCommPeriodCount = (int) measuringChannel.getPeriodList().stream().filter(
+                        period -> period.getStatus().equals("1")).count();
+                // если есть такие периоды, то помечаем канал как некомм.
+                if (unCommPeriodCount > 0)
+                    measuringChannel.setCommercialInfo(false);
                 measChannelList.add(measuringChannel); // добавляем очередной measuringchannel в список
             }
         }

@@ -5,7 +5,6 @@ import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
@@ -36,9 +35,9 @@ public class Main extends Application {
             });
         }
         catch (Exception e) {
-            ServiceUtil.messageWindow.showModalWindow("Ошибка", e.getMessage() +
-                    " Программа будет закрыта.", Alert.AlertType.ERROR);
-            //e.printStackTrace();
+            //ServiceUtil.messageWindow.showModalWindow("Ошибка", e.getMessage() +
+            //        " Программа будет закрыта.", Alert.AlertType.ERROR);
+            e.printStackTrace();
             Platform.exit();
             System.exit(0);
         }

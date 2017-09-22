@@ -69,7 +69,7 @@ public class MainWindowController {
     public ListView measChannelListView;
     public Label labelMeasPointCode;
     public Button btnMake80020;
-    public Button btnMakeXLS;
+    public Button btnMakeExcel;
     public TextField textViewAIIS;
     public ComboBox<String> comboBoxAreaName;
     public RadioButton radioButton30Min;
@@ -176,6 +176,12 @@ public class MainWindowController {
     private Spinner<Integer> spinnerHour;
     @FXML
     private ProgressBar progressBar;
+    @FXML
+    private Button btnSaveORE;
+    @FXML
+    private Button btnDelORE;
+    @FXML
+    private Button btnOpenFiles;
 
     // метод берет из папки ресурсов /Resources jar-а файл resource и сохраняет в файл fileName
     static void resourceToFile (String resource, String fileName) throws IOException {
@@ -225,11 +231,23 @@ public class MainWindowController {
         radioBtnBack.setToggleGroup(toggleGroup);
 
         // загружаем пиктограммы на кнопки
-        Image imageXml = new Image("Resources/xml51070.png");
-        btnMake51070.graphicProperty().setValue(new ImageView(imageXml));
+        Image image = new Image("Resources/xml51070.png");
+        btnMake51070.graphicProperty().setValue(new ImageView(image));
 
-        imageXml = new Image("Resources/xml50080.png");
-        btnMake50080.graphicProperty().setValue(new ImageView(imageXml));
+        image = new Image("Resources/xml50080.png");
+        btnMake50080.graphicProperty().setValue(new ImageView(image));
+
+        image = new Image("Resources/save.png");
+        btnSaveORE.graphicProperty().setValue(new ImageView(image));
+
+        image = new Image("Resources/del.png");
+        btnDelORE.graphicProperty().setValue(new ImageView(image));
+
+        image = new Image("Resources/open2.png");
+        btnOpenXml.graphicProperty().setValue(new ImageView(image));
+
+        image = new Image("Resources/open2.png");
+        btnOpenExcel.graphicProperty().setValue(new ImageView(image));
 
         // загружаем коды ОРЭ контрагентов из файла ORE.txt
         try {
@@ -244,6 +262,57 @@ public class MainWindowController {
         }
 
         // обработчики событий контролов
+
+        btnSaveORE.setOnAction(event -> {
+            if (comboBoxSubjectOre.getValue()!= null && !comboBoxSubjectOre.getValue().trim().equals("")) {
+                String newCodeORE = comboBoxSubjectOre.getValue();
+                if (!comboBoxSubjectOre.getItems().contains(newCodeORE)) {
+                    comboBoxSubjectOre.getItems().add(comboBoxSubjectOre.getValue());
+                    // сохраняем коды ОРЭ контрагентов в файл ORE.txt
+                    try {
+                        String fileName = appDataDir + slash + "ORE.txt";
+                        File oreFile = new File(fileName);
+                        Files.write(oreFile.toPath(), comboBoxSubjectOre.getItems(), StandardCharsets.UTF_8);
+                        messageWindow.showModalWindow("Информация", "Новый код ОРЭ успешно сохранен!",
+                                Alert.AlertType.INFORMATION);
+                    } catch (Exception e) {
+                        messageWindow.showModalWindow("Ошибка", "Не удалось сохранить коды ОРЭ контрагентов." +
+                                        " Проверьте доступность файла ORE.txt",
+                                Alert.AlertType.ERROR);
+                    }
+                }
+                else {
+                    messageWindow.showModalWindow("Внимание", "Такой код ОРЭ уже существует!",
+                            Alert.AlertType.WARNING);
+                }
+            }
+            else {
+                messageWindow.showModalWindow("Внимание", "Код ОРЭ не может быть пустым!",
+                        Alert.AlertType.WARNING);
+            }
+        });
+
+        btnDelORE.setOnAction(event -> {
+            String codeOREforDel = comboBoxSubjectOre.getSelectionModel().getSelectedItem();
+            if (codeOREforDel != null && comboBoxSubjectOre.getItems().contains(codeOREforDel)) {
+                Optional<ButtonType> result = messageWindow.showModalWindow("Удаление кода ОРЭ", "Вы " +
+                        "действительно хотите удалить код ОРЭ \"" +
+                        codeOREforDel + "\"?", Alert.AlertType.CONFIRMATION);
+                if (result.get() != ButtonType.OK) {
+                    return;
+                }
+                comboBoxSubjectOre.getItems().remove(codeOREforDel);
+                try {
+                    String fileName = appDataDir + slash + "ORE.txt";
+                    File oreFile = new File(fileName);
+                    Files.write(oreFile.toPath(), comboBoxSubjectOre.getItems(), StandardCharsets.UTF_8);
+                } catch (Exception e) {
+                    messageWindow.showModalWindow("Ошибка", "Не удалось сохранить коды ОРЭ контрагентов." +
+                                    " Проверьте доступность файла ORE.txt",
+                            Alert.AlertType.ERROR);
+                }
+            }
+        });
 
         checkBoxCompare.selectedProperty().addListener(event -> {
             if (checkBoxCompare.isSelected()) {
@@ -314,14 +383,23 @@ public class MainWindowController {
 
     private void initTabAdditional() {
         // загружаем пиктограммы на кнопки
-        Image imageXml = new Image("Resources/sort.png");
-        btnSortFiles.graphicProperty().setValue(new ImageView(imageXml));
+        Image image = new Image("Resources/sort.png");
+        btnSortFiles.graphicProperty().setValue(new ImageView(image));
 
-        imageXml = new Image("Resources/delete.png");
-        btnDelFiles.graphicProperty().setValue(new ImageView(imageXml));
+        image = new Image("Resources/delete.png");
+        btnDelFiles.graphicProperty().setValue(new ImageView(image));
 
-        imageXml = new Image("Resources/calc.png");
-        btnCalc.graphicProperty().setValue(new ImageView(imageXml));
+        image = new Image("Resources/calc.png");
+        btnCalc.graphicProperty().setValue(new ImageView(image));
+
+        image = new Image("Resources/open2.png");
+        btnOpenSort.graphicProperty().setValue(new ImageView(image));
+
+        image = new Image("Resources/open2.png");
+        btnOpenDel.graphicProperty().setValue(new ImageView(image));
+
+        image = new Image("Resources/open2.png");
+        btnOpenCalc.graphicProperty().setValue(new ImageView(image));
 
         btnOpenCalc.setOnAction(event -> {
             FileChooser fileChooser = new FileChooser();
@@ -498,6 +576,7 @@ public class MainWindowController {
         File [] fileList = file.listFiles();
         if (fileList != null) {
             for (File myFile : fileList) {
+                if (myFile.isFile())
                 if (myFile.isFile())
                     try {
                         unZipFile(myFile);
@@ -928,14 +1007,23 @@ public class MainWindowController {
     // инициализация контролов и загрузка ресурсов в Tab-ах
     private void initTab80020() {
         // загружаем пиктограммы на кнопки
-        Image imageXml = new Image("Resources/xls.png");
-        btnMakeXLS.graphicProperty().setValue(new ImageView(imageXml));
+        Image image = new Image("Resources/xls.png");
+        btnMakeExcel.graphicProperty().setValue(new ImageView(image));
 
-        Image imageXls = new Image("Resources/xml.png");
-        btnMake80020.graphicProperty().setValue(new ImageView(imageXls));
+        image = new Image("Resources/xml.png");
+        btnMake80020.graphicProperty().setValue(new ImageView(image));
 
-        Image imageReload = new Image("Resources/reload.png");
-        btnReload.graphicProperty().setValue(new ImageView(imageReload));
+        image = new Image("Resources/reload.png");
+        btnReload.graphicProperty().setValue(new ImageView(image));
+
+        image = new Image("Resources/save.png");
+        btnSaveAIIS.graphicProperty().setValue(new ImageView(image));
+
+        image = new Image("Resources/del.png");
+        btnDelAIIS.graphicProperty().setValue(new ImageView(image));
+
+        image = new Image("Resources/open2.png");
+        btnOpenFiles.graphicProperty().setValue(new ImageView(image));
 
         // помещаем радио кнопки в одну группу выбора
         ToggleGroup toggleGroup = new ToggleGroup();
@@ -962,6 +1050,11 @@ public class MainWindowController {
 
                 // проверяем все measuringChannel-ы выбранного measuringPoint-а
                 for (MeasuringChannel measuringChannel : measuringPoint.getMeasChannelList()) {
+                    // показываем контекст. меню на канале только при условии снятой галочки "Пакет. обраб."
+                    measuringChannel.setOnContextMenuRequested(event -> {
+                        if (!checkBoxBatch.isSelected())
+                            measuringChannel.getMenu().show(measuringChannel, event.getScreenX(), event.getScreenY());
+                    });
 
                     // в пункт контекс. меню каждого measuringChannel-а добавляем слушателя установки некомм. инф.,
                     // в котором меняется тип информации на некомм. и цвет кода текущ. measuringPoint-а
@@ -973,7 +1066,7 @@ public class MainWindowController {
                         if (periodList != null)
                             periodList.forEach(period -> period.setStatus("1"));
                     });
-                    // в пункт контекс. меню каждого measuringChannel-а добавляем показа данных,
+                    // в пункт контекс. меню каждого measuringChannel-а добавляем слушателя показа данных,
                     measuringChannel.getShowDataItem().setOnAction(event -> {
                         dataWinControl.labelMeasPoint.setText(measuringPoint.getName());
                         dataWinControl.labelMeasChannel.setText(measuringChannel.getAliasName());
@@ -1067,6 +1160,10 @@ public class MainWindowController {
         settingsStage.setScene(settingsScene);
         settingsStage.setResizable(false);
         settingsStage.initModality(Modality.APPLICATION_MODAL);
+
+        // загружаем иконку
+        Image image = new Image("Resources/open2.png");
+        settingsWinControl.btnSelectSaveDir.graphicProperty().setValue(new ImageView(image));
     }
 
     // при инициализации гл. окна программы создаем окно c данными по каналам ТИ
@@ -1083,12 +1180,34 @@ public class MainWindowController {
         dataStage.setResizable(false);
         dataStage.initModality(Modality.APPLICATION_MODAL);
         dataStage.initStyle(StageStyle.UTILITY);
+
+        dataStage.setOnCloseRequest(event -> {
+            MeasuringChannel measuringChannel;
+            if (dataWinControl.dataTableView.getItems().size() > 0) {
+                Period period = (Period) dataWinControl.dataTableView.getItems().get(0);
+                measuringChannel = period.getParent();
+                measuringChannel.setCommercialInfo(true);
+                for (Object object : dataWinControl.dataTableView.getItems()) {
+                    period = (Period) object;
+                    if (period.getStatus() != null && period.getStatus().equals("1")) {
+                        period.getParent().setCommercialInfo(false);
+                        labelMeasPointCode.setTextFill(Color.RED);
+                        period.getParent().setFont(Font.font("System", FontPosture.ITALIC, -1));
+                        break;
+                    }
+                }
+                if (measuringChannel.isCommercialInfo()) {
+                    labelMeasPointCode.setTextFill(Color.BLACK);
+                    measuringChannel.setFont(Font.font("System", FontPosture.REGULAR, -1));
+                }
+            }
+        });
     }
 
     // при инициализации гл. окна программы создаем окно "О программе"
     private void initAboutWindow() {
         aboutWindow.setTitle("О программе");
-        aboutWindow.setHeaderText("АСКУЭ 1.0");
+        aboutWindow.setHeaderText("АСКУЭ 2.0");
         aboutWindow.setContentText("Для использования только в ПАО \"АЭСК\"" + System.lineSeparator() +
                 "Разработчик Ищенко С.А. " + System.lineSeparator() + "e-mail: astraboomer@hotmail.com");
     }
@@ -1106,8 +1225,9 @@ public class MainWindowController {
 
         } catch (IOException e) {
             // выводим сообщение об шибке в случае неудачи
-            messageWindow.showModalWindow("Ошибка", e.getMessage() + ". Программа будет закрыта.",
-                    Alert.AlertType.ERROR);
+            //messageWindow.showModalWindow("Ошибка", e.getMessage() + ". Программа будет закрыта.",
+            //        Alert.AlertType.ERROR);
+            e.printStackTrace();
             Platform.exit();
             System.exit(0);
         }
@@ -1146,7 +1266,7 @@ public class MainWindowController {
             btnSelectAll.setDisable(false);
             btnUnSelectAll.setDisable(false);
             btnMake80020.setDisable(false);
-            btnMakeXLS.setDisable(false);
+            btnMakeExcel.setDisable(false);
             comboBoxAreaName.setDisable(false);
             btnReload.setDisable(false);
             textViewAIIS.setDisable(false);
@@ -1231,12 +1351,8 @@ public class MainWindowController {
             if (localFileList.size() > 0) { // если размер списка корректных файлов больше 0
                 lastOpenDir = localFileList.get(0).getParentFile();
                 this.fileList = localFileList;
-                this.fileList.sort(new Comparator<File>() { // далее сортируем файлы по именам
-                    @Override
-                    public int compare(File o1, File o2) {
-                        return o1.getName().compareTo(o2.getName());
-                    }
-                });
+                // далее сортируем файлы по именам
+                this.fileList.sort((o1, o2) -> o1.getName().compareTo(o2.getName()));
                 for (File file : this.fileList) {
                     fileNames.add(file.getAbsolutePath());
                 }
@@ -1375,7 +1491,8 @@ public class MainWindowController {
                 // метод call ничего не будет возвращать
                 return null;
             }
-            @Override protected void succeeded() { // срабатывает при успешном завершении task-а
+            @Override
+            protected void succeeded() { // срабатывает при успешном завершении task-а
                 super.succeeded();
                 Long endTime = new Date().getTime();
                 DateFormat formatter = new SimpleDateFormat("mm:ss");
@@ -1742,7 +1859,6 @@ public class MainWindowController {
                         messNumber = Integer.toString(num);
                         XML80020 xmlTemp = currentXml;
                         currentXml = new XML80020(file);
-                        //currentXml.loadDataFromXML();
                         for (int i = 0; i < currentXml.getAreaList().size(); i++) {
                             Area area = currentXml.getAreaList().get(i);
                             for (int j = 0; j < area.getMeasPointList().size(); j++) {
